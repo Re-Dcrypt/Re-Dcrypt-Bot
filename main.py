@@ -33,13 +33,31 @@ class MyClient(discord.Client):
             decrypt=Cipher.Caesar.decode(encrypt, key).replace('|',' ')
             await message.channel.send(f"`{decrypt}`")
 
-        if message.content.startswith('&?b64'):
-            cont=message.content.split()
-            encrypt=''
+        if message.content.startswith('&?b64_decode'):
+            encrypt=message.content.split()
+            '''
             for i in cont[1:]:
-                encrypt=encrypt + " " + str(i)          
+                encrypt=encrypt + " " + str(i)         
+            
             decrypt=Cipher.B64.decode(encrypt) #.replace('|',' ')
+            
+            # Don't need dependencies
+            '''
+            # Check for padding issues
+            padding_needed = len(encrypt) % 4
+            if padding_needed:
+                encrypt += '===' # See https://stackoverflow.com/a/49459036/14437456
+            
+            decrypt = base64.b64decode(encrypt).decode('utf-8')
             await message.channel.send(f"`{decrypt}`")
+        
+        if message.content.startswith('&?b64_encode'):
+            to_encrypt = ' '.join(message.content.split()[1:])
+            message_bytes = to_encrypt.encode('ascii')
+            base64_bytes = base64.b64encode(message_bytes)
+            base64_message = base64_bytes.decode('ascii')
+            
+            await message.channel.send(f'`{base64_message}`')
 
         if message.content.startswith('&?a1z26'):
             alphabets=list(string.ascii_lowercase)
@@ -104,7 +122,8 @@ class MyClient(discord.Client):
             embed.add_field(name="Commands", value="Below are the commands you can use with this bot", inline=False)
             embed.add_field(name="Caesar Cipher Decode", value="&?caesar [key] [code]", inline=False)
             embed.add_field(name="a1z26", value="&?a1z26 [code] (can be numbers/alphabets)", inline=False)
-            embed.add_field(name="Base64 Decode", value="&?b64 [code]", inline=False)
+            embed.add_field(name="Base64 Decode", value="&?b64decode [code]", inline=False)
+            embed.add_field(name="B
             embed.add_field(name="Atbash", value="&?atbash [code]", inline=False)
             embed.add_field(name="Feedback/Suggestion", value="&?feedback [your feedback/suggestion]", inline=False)
             embed.add_field(name="Invite", value="&?invite", inline=False)
