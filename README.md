@@ -1,19 +1,19 @@
 # Re-Dcrypt-Bot
 
-##Re-Dcrypt Bot is a bot that will help you decode many ciphers like caesar , base64, A1Z26 & Atbash.
-###Prefix
+## Re-Dcrypt Bot is a bot that will help you decode many ciphers like caesar , base64, A1Z26 & Atbash.
+### Prefix
 &?
-###Commands
+### Commands
 Below are the commands you can use with this bot
-####Caesar Cipher Decode
+#### Caesar Cipher Decode
 &?caesar [key] [code]
-####a1z26
+#### a1z26
 &?a1z26 [code] (can be numbers/alphabets)
-####Base64 Decode
+#### Base64 Decode
 &?b64 [code]
-####Atbash
+#### Atbash
 &?atbash [code]
-####Feedback/Suggestion
+#### Feedback/Suggestion
 &?feedback [your feedback/suggestion]
-####Invite
+#### Invite
 &?invite
