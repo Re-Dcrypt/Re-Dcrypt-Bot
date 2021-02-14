@@ -1,7 +1,9 @@
 import discord
-import Cipher #pip install CipherModule
+#import Cipher #pip install CipherModule
+# Get rid of dependency
 import string
 import os
+import base64
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -37,8 +39,13 @@ class MyClient(discord.Client):
             cont=message.content.split()
             encrypt=''
             for i in cont[1:]:
-                encrypt=encrypt + " " + str(i)          
+                encrypt=encrypt + " " + str(i)         
+            '''
             decrypt=Cipher.B64.decode(encrypt) #.replace('|',' ')
+            
+            # Don't need dependencies
+            '''
+            decrypt = base64.b64decode(encrypt).decode('utf-8')
             await message.channel.send(f"`{decrypt}`")
 
         if message.content.startswith('&?a1z26'):
