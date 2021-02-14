@@ -123,7 +123,7 @@ class MyClient(discord.Client):
             embed.add_field(name="Caesar Cipher Decode", value="&?caesar [key] [code]", inline=False)
             embed.add_field(name="a1z26", value="&?a1z26 [code] (can be numbers/alphabets)", inline=False)
             embed.add_field(name="Base64 Decode", value="&?b64decode [code]", inline=False)
-            embed.add_field(name="B
+            embed.add_field(name="Base64 Encode", value="&?b64encode [code]", inline=False)
             embed.add_field(name="Atbash", value="&?atbash [code]", inline=False)
             embed.add_field(name="Feedback/Suggestion", value="&?feedback [your feedback/suggestion]", inline=False)
             embed.add_field(name="Invite", value="&?invite", inline=False)
