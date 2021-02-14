@@ -5,6 +5,9 @@ import os
 
 class MyClient(discord.Client):
     async def on_ready(self):
+        activity = discord.Game(name="&?help")
+        await client.change_presence(activity=activity)
+       # await client.change_presence(activity=discord.Activity(activity=discord.Game(name="&?help")))
         print('Logged on as', self.user)
 
     async def fetch_message(self,message):
@@ -78,6 +81,43 @@ class MyClient(discord.Client):
                     decrypt=decrypt+str(i)
                     
             await message.channel.send(f"`{decrypt}`")
+
+        if message.content.startswith('&?feedback'):
+            cont=message.content.replace('&?feedback ','')
+            channel=client.get_channel(810404758706716672)
+            embed=discord.Embed(title="New Feedback", description=cont, color=0x39ff14)
+            embed.set_author(name=message.author)
+            mess = await channel.send(embed=embed)
+            emoji1='\N{THUMBS UP SIGN}'
+            emoji2='\N{THUMBS DOWN SIGN}'
+            await mess.add_reaction(emoji1)
+            await mess.add_reaction(emoji2)
+
+            #await channel.send(f'{message.author} sent a feedback: {cont}')
+            await message.channel.send('Feedback sent')
+            
+        if message.content.startswith('&?help'):
+            embed=discord.Embed(title="Re-Dcrypt Bot Help", description="Re-Dcrypt Bot is a bot that will help you decode many ciphers like caesar , base64, A1Z26 & Atbash.", color=0x39ff14)
+            embed.set_author(name="Re-Dcrypt", icon_url="https://i.imgur.com/ynad6vI.png")
+            embed.set_thumbnail(url="https://i.imgur.com/ynad6vI.png")
+            embed.add_field(name="Prefix", value="&?", inline=False)
+            embed.add_field(name="Commands", value="Below are the commands you can use with this bot", inline=False)
+            embed.add_field(name="Caesar Cipher Decode", value="&?caesar [key] [code]", inline=False)
+            embed.add_field(name="a1z26", value="&?a1z26 [code] (can be numbers/alphabets)", inline=False)
+            embed.add_field(name="Base64 Decode", value="&?b64 [code]", inline=False)
+            embed.add_field(name="Atbash", value="&?atbash [code]", inline=False)
+            embed.add_field(name="Feedback/Suggestion", value="&?feedback [your feedback/suggestion]", inline=False)
+            embed.add_field(name="Invite", value="&?invite", inline=False)
+            embed.set_footer(text="Re-dcrypt Bot v0.5 Beta")
+            embed2=discord.Embed(title="Community Server", url="https://discord.gg/hpyJ5A2tXY", description="Join our community server", color=0x39ff14)
+            embed2.set_author(name="Re-Dcrypt", icon_url="https://i.imgur.com/ynad6vI.png")
+            embed2.set_thumbnail(url="https://i.imgur.com/ynad6vI.png")
+            embed2.set_footer(text="Re-dcrypt Bot v0.5 Beta")
+            await message.channel.send(embed=embed)
+            await message.channel.send(embed=embed2)
+            
+        if message.content.startswith('&?invite'):
+            await message.channel.send('https://discord.com/api/oauth2/authorize?client_id=775629409494630410&permissions=67451968&scope=bot')
 
 
 client = MyClient()
