@@ -2,7 +2,7 @@ import discord
 import Cipher #pip install CipherModule
 import string
 import os
-
+import base64
 class MyClient(discord.Client):
     async def on_ready(self):
         activity = discord.Game(name="&?help")
@@ -24,6 +24,9 @@ class MyClient(discord.Client):
         if message.content == '&?ping':
             await message.channel.send('Pong')
 
+        if message.content == '&?stats':
+            await message.channel.send(f"Currently I'm in {len(client.guilds)} servers")
+
         if message.content.startswith('&?caesar'):
             cont=message.content.split()
             encrypt=''
@@ -31,15 +34,15 @@ class MyClient(discord.Client):
                 encrypt=encrypt + " "+str(i)
             key=int(cont[1])            
             decrypt=Cipher.Caesar.decode(encrypt, key).replace('|',' ')
-            await message.channel.send(f"`{decrypt}`")
+            await message.channel.send(f"```{decrypt}```")
 
         if message.content.startswith('&?b64'):
             cont=message.content.split()
             encrypt=''
             for i in cont[1:]:
                 encrypt=encrypt + " " + str(i)          
-            decrypt=Cipher.B64.decode(encrypt) #.replace('|',' ')
-            await message.channel.send(f"`{decrypt}`")
+            decrypt = base64.b64decode(encrypt).decode('utf-8')
+            await message.channel.send(f"```{decrypt}```")
 
         if message.content.startswith('&?a1z26'):
             alphabets=list(string.ascii_lowercase)
@@ -48,21 +51,24 @@ class MyClient(discord.Client):
             num_list=[]
             for i in cont[1:]:
                 encrypt=encrypt + " " + str(i)
-                num_list.append(int(i))                
+                try:
+                    num_list.append(int(i))                
+                except:
+                    pass
             decrypt=''
             if cont[1].isalpha():
                 for i in encrypt:
                     try:
-                        decrypt=decrypt+' '+str(alphabets.index(i.lowercase()))
+                        z=i.lower()
+                        decrypt=decrypt+' '+str(alphabets.index(z)+1)
                     except:
                         decrypt=decrypt+str(i)
             else:
-
                 for i in num_list:
-                    decrypt=decrypt + " " + str(alphabets[i])
+                    decrypt=decrypt + " " + str(alphabets[i-1])
             
             
-            await message.channel.send(f"`{decrypt}`")
+            await message.channel.send(f"``` {decrypt} ```")
 
         if message.content.startswith('&?atbash'):
             alphabets=list(string.ascii_lowercase)
@@ -80,7 +86,7 @@ class MyClient(discord.Client):
                 except:
                     decrypt=decrypt+str(i)
                     
-            await message.channel.send(f"`{decrypt}`")
+            await message.channel.send(f"```{decrypt}```")
 
         if message.content.startswith('&?feedback'):
             cont=message.content.replace('&?feedback ','')
