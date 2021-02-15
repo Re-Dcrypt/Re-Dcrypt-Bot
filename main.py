@@ -1,13 +1,28 @@
 import discord
-import Cipher #pip install CipherModule
+#import Cipher #pip install CipherModule
 import string
 import os
 import base64
+
+def caesar(text,s): 
+    result = "" 
+  
+    # traverse text 
+    for i in range(1,len(text)): 
+        char = text[i] 
+  
+        if (char.isupper()): 
+            result += chr((ord(char) + s-65) % 26 + 65) 
+  
+        else: 
+            result += chr((ord(char) + s - 97) % 26 + 97) 
+  
+    return result 
+
 class MyClient(discord.Client):
     async def on_ready(self):
         activity = discord.Game(name="&?help")
         await client.change_presence(activity=activity)
-       # await client.change_presence(activity=discord.Activity(activity=discord.Game(name="&?help")))
         print('Logged on as', self.user)
 
     async def fetch_message(self,message):
@@ -33,16 +48,29 @@ class MyClient(discord.Client):
             for i in cont[2:]:
                 encrypt=encrypt + " "+str(i)
             key=int(cont[1])            
-            decrypt=Cipher.Caesar.decode(encrypt, key).replace('|',' ')
+            decrypt=caesar(encrypt,26-key)
             await message.channel.send(f"```{decrypt}```")
 
-        if message.content.startswith('&?b64'):
+        if message.content.startswith('&?b64_decode'):
             cont=message.content.split()
             encrypt=''
             for i in cont[1:]:
-                encrypt=encrypt + " " + str(i)          
+                encrypt=encrypt + " " + str(i)         
+
+            padding_needed = len(encrypt) % 4
+            if padding_needed:
+                encrypt += '===' # See https://stackoverflow.com/a/49459036/14437456
+            
             decrypt = base64.b64decode(encrypt).decode('utf-8')
             await message.channel.send(f"```{decrypt}```")
+           
+
+        if message.content.startswith('&?b64_encode'):
+            to_encrypt = ' '.join(message.content.split()[1:])
+            message_bytes = to_encrypt.encode('ascii')
+            base64_bytes = base64.b64encode(message_bytes)
+            base64_message = base64_bytes.decode('ascii')
+            await message.channel.send(f'```{base64_message}```')
 
         if message.content.startswith('&?a1z26'):
             alphabets=list(string.ascii_lowercase)
@@ -110,15 +138,15 @@ class MyClient(discord.Client):
             embed.add_field(name="Commands", value="Below are the commands you can use with this bot", inline=False)
             embed.add_field(name="Caesar Cipher Decode", value="&?caesar [key] [code]", inline=False)
             embed.add_field(name="a1z26", value="&?a1z26 [code] (can be numbers/alphabets)", inline=False)
-            embed.add_field(name="Base64 Decode", value="&?b64 [code]", inline=False)
+            embed.add_field(name="Base64 Decode", value="&?b64_decode [code] \n&?b64_encode [code]", inline=False)
             embed.add_field(name="Atbash", value="&?atbash [code]", inline=False)
             embed.add_field(name="Feedback/Suggestion", value="&?feedback [your feedback/suggestion]", inline=False)
             embed.add_field(name="Invite", value="&?invite", inline=False)
-            embed.set_footer(text="Re-dcrypt Bot v0.5 Beta")
+            embed.set_footer(text="Re-dcrypt Bot v0.6 Beta")
             embed2=discord.Embed(title="Community Server", url="https://discord.gg/hpyJ5A2tXY", description="Join our community server", color=0x39ff14)
             embed2.set_author(name="Re-Dcrypt", icon_url="https://i.imgur.com/ynad6vI.png")
             embed2.set_thumbnail(url="https://i.imgur.com/ynad6vI.png")
-            embed2.set_footer(text="Re-dcrypt Bot v0.5 Beta")
+            embed2.set_footer(text="Re-dcrypt Bot v0.6 Beta")
             await message.channel.send(embed=embed)
             await message.channel.send(embed=embed2)
             
