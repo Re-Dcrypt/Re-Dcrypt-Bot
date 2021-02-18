@@ -5,10 +5,10 @@ import os
 import base64
 import binascii
 from art import *
+
 def caesar(text,s): 
     result = "" 
-  
-    # traverse text 
+
     for i in range(1,len(text)): 
         char = text[i] 
         if char != " ":
@@ -21,7 +21,52 @@ def caesar(text,s):
             result=result+" "
     return result
 
+MORSE_CODE_DICT = { 'A':'.-', 'B':'-...', 
+                    'C':'-.-.', 'D':'-..', 'E':'.', 
+                    'F':'..-.', 'G':'--.', 'H':'....', 
+                    'I':'..', 'J':'.---', 'K':'-.-', 
+                    'L':'.-..', 'M':'--', 'N':'-.', 
+                    'O':'---', 'P':'.--.', 'Q':'--.-', 
+                    'R':'.-.', 'S':'...', 'T':'-', 
+                    'U':'..-', 'V':'...-', 'W':'.--', 
+                    'X':'-..-', 'Y':'-.--', 'Z':'--..', 
+                    '1':'.----', '2':'..---', '3':'...--', 
+                    '4':'....-', '5':'.....', '6':'-....', 
+                    '7':'--...', '8':'---..', '9':'----.', 
+                    '0':'-----', ', ':'--..--', '.':'.-.-.-', 
+                    '?':'..--..', '/':'-..-.', '-':'-....-', 
+                    '(':'-.--.', ')':'-.--.-' , ' ':'/'} 
 
+def morse_encrypt(message): 
+    cipher = '' 
+    for letter in message: 
+        if letter != ' ': 
+            cipher += MORSE_CODE_DICT[letter.upper()] + ' '
+        else: 
+            cipher += ' / '
+  
+    return cipher 
+
+def morse_decrypt(message): 
+    message += ' '
+    decipher = '' 
+    citext = '' 
+    for letter in message: 
+        i=0
+        if (letter != ' '):   
+            i = 0
+            
+            citext += letter 
+        else:
+            i += 1
+            if i == 2 : 
+                decipher += ' '
+            else: 
+                decipher += list(MORSE_CODE_DICT.keys())[list(MORSE_CODE_DICT 
+                .values()).index(citext)] 
+                citext = '' 
+  
+    return decipher 
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -41,7 +86,10 @@ class MyClient(discord.Client):
             prefix=''
         else:
             prefix="&?"
-
+        #print (message.channel.id)
+        if message.channel.id == 795999461364334612:
+            if message.content.lower() == "loon":
+                await message.channel.send(f"{message.author.mention} has done the current puzzle")
 
         if message.content.startswith(prefix):
             if message.content == f"{prefix}ping"  or message.content.startswith("&?ping"):
@@ -131,20 +179,28 @@ class MyClient(discord.Client):
                         decrypt=decrypt+str(i)
                         
                 await message.channel.send(f"```{decrypt}```")
-                
-    
+        
+            elif message.content.startswith(f"{prefix}morse") or message.content.startswith("&?morse"):
+                cont=message.content.split()
+                encrypt=''
+                for i in cont[1:]:
+                    encrypt=encrypt + " " + str(i)
+                try:
+                    await message.channel.send(f"```{morse_decrypt(encrypt[1:])}```")
+                except:
+                    await message.channel.send(f"```{morse_encrypt(encrypt[1:])}```")
+                    
 
             elif message.content.startswith(f"{prefix}feedback") or message.content.startswith("&?feedback"):
                 cont=message.content.replace('&?feedback ','')
                 channel=client.get_channel(810404758706716672)
                 embed=discord.Embed(title="New Feedback", description=cont, color=0x39ff14)
-                embed.set_author(name=message.author)
+                embed.set_author(name=message.author, icon_url=message.author.avatar_url)
                 mess = await channel.send(embed=embed)
                 emoji1='\N{THUMBS UP SIGN}'
                 emoji2='\N{THUMBS DOWN SIGN}'
                 await mess.add_reaction(emoji1)
                 await mess.add_reaction(emoji2)
-
                 #await channel.send(f'{message.author} sent a feedback: {cont}')
                 await message.channel.send('Feedback sent')
                 
@@ -158,15 +214,16 @@ class MyClient(discord.Client):
                 embed.add_field(name="a1z26", value=f"{prefix}a1z26 [code] (can be numbers/alphabets)", inline=False)
                 embed.add_field(name="Base64 Decode", value=f"{prefix}b64_decode [code] \n{prefix}b64_encode [code]", inline=False)
                 embed.add_field(name="Atbash", value=f"{prefix}atbash [code]", inline=False)
+                embed.add_field(name="Morse Code", value=f"{prefix}morse [code/text] (This will automatically decode the morse & encode the text)", inline=False)
                 embed.add_field(name="Text reverse", value=f"{prefix}reverse [text]", inline=False)
                 embed.add_field(name="Feedback/Suggestion", value=f"{prefix}feedback [your feedback/suggestion]", inline=False)
                 embed.add_field(name="Invite", value=f"{prefix}invite", inline=False)
                 embed.add_field(name="Note:", value="The Prefix  `&?` is only required in servers. All the commands will work without the prefix in the bots DM.", inline=False)
-                embed.set_footer(text="Re-dcrypt Bot v0.6.1 Beta")
-                embed2=discord.Embed(title="Community Server", url="https://discord.gg/hpyJ5A2tXY", description="<a:BlobDiscord:779402415916580864> Join our community server <a:redcryptexcited:781090077748494336>", color=0x39ff14)
+                embed.set_footer(text="Re-dcrypt Bot v0.6.4 Beta")
+                embed2=discord.Embed(title="Community Server", url="https://discord.gg/c68aWWMruT", description="<a:BlobDiscord:779402415916580864> Join our community server <a:redcryptexcited:781090077748494336>", color=0x39ff14)
                 embed2.set_author(name="Re-Dcrypt", icon_url="https://i.imgur.com/ynad6vI.png")
                 embed2.set_thumbnail(url="https://i.imgur.com/ynad6vI.png")
-                embed2.set_footer(text="Re-dcrypt Bot v0.6.1 Beta")
+                embed2.set_footer(text="Re-dcrypt Bot v0.6.4 Beta")
                 await message.channel.send(embed=embed)
                 await message.channel.send(embed=embed2)
                 
