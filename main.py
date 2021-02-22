@@ -21,6 +21,40 @@ def caesar(text,s):
             result=result+" "
     return result
 
+
+def vignere(text, key, mode):
+  lowercase = text.lower()
+  encrypted = ''
+  index = None
+  counter = 0
+
+  # First do the shifting thingy
+  for char in lowercase:
+    # Make sure the index does not exceed the key's length
+    if counter == len(key): counter = 0
+
+    if char not in alphabet:
+      encrypted += char
+    else:
+      index = alphabet.index(char)
+      
+      if mode == 'encrypt':
+        index += alphabet.index(key[counter])
+      else:
+        index -= alphabet.index(key[counter])
+
+      index %= len(alphabet)
+      encrypted += alphabet[index]
+      counter += 1
+  
+  # Restore cases
+  for x in range(len(encrypted)):
+    encrypted = list(encrypted)
+    if text[x] in alphabet_upper:
+      encrypted[x] = encrypted[x].upper()
+    
+  return ''.join(encrypted)
+
 MORSE_CODE_DICT = { 'A':'.-', 'B':'-...', 
                     'C':'-.-.', 'D':'-..', 'E':'.', 
                     'F':'..-.', 'G':'--.', 'H':'....', 
@@ -94,6 +128,22 @@ class MyClient(discord.Client):
         if message.content.startswith(prefix):
             if message.content == f"{prefix}ping"  or message.content.startswith("&?ping"):
                 await message.channel.send('Pong')
+                
+            
+            elif message.content.startswith((f"{prefix}vignere_encrypt", "&?vignere_encrypt")):
+                text = message.content.split()
+                key = text[1]
+                text = ' '.join(text[2:])
+                enc = vignere(text, key, 'encrypt')
+                await message.channel.send(f'```{enc}```')
+                
+                
+            elif message.content.startswith(f'{prefix}vignere_decrypt', '&?vignere_decrypt'):
+                text = message.content.split()
+                key = text[1]
+                text = ' '.join(text[2:])
+                dec = vignere(text, key, 'decrypt')
+                await message.channel.send(f'```{dec}```')
 
             elif message.content.startswith(f"{prefix}reverse")  or message.content.startswith("&?reverse"):
                 cont=message.content.split()
