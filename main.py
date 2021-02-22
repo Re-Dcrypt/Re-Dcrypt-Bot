@@ -261,6 +261,8 @@ class MyClient(discord.Client):
                 embed.add_field(name="Prefix", value="&?", inline=False)
                 embed.add_field(name="Commands", value="Below are the commands you can use with this bot", inline=False)
                 embed.add_field(name="Caesar Cipher Decode", value=f"{prefix}caesar [key] [code]", inline=False)
+                embed.add_field(name="Vignere Cipher Encode", value=f'{prefix}vignere_encrypt [key] [code]', inline=False)
+                embed.add_field(name='Vignere Cipher Decode', value=f'{prefix}vignere_decrypt [key] [code]', inline=False)
                 embed.add_field(name="a1z26", value=f"{prefix}a1z26 [code] (can be numbers/alphabets)", inline=False)
                 embed.add_field(name="Base64 Decode", value=f"{prefix}b64_decode [code] \n{prefix}b64_encode [code]", inline=False)
                 embed.add_field(name="Atbash", value=f"{prefix}atbash [code]", inline=False)
