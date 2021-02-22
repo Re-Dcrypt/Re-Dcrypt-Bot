@@ -6,6 +6,10 @@ import base64
 import binascii
 from art import *
 
+alphabet = string.ascii_lowercase
+alphabet_upper = alphabet.upper()
+
+
 def caesar(text,s): 
     result = "" 
 
