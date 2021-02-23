@@ -6,6 +6,10 @@ import base64
 import binascii
 from art import *
 
+alphabet = string.ascii_lowercase
+alphabet_upper = alphabet.upper()
+
+
 def caesar(text,s): 
     result = "" 
 
@@ -20,6 +24,41 @@ def caesar(text,s):
         else:
             result=result+" "
     return result
+
+
+def vignere(text, key, mode):
+  lowercase = text.lower()
+  encrypted = ''
+  index = None
+  counter = 0
+  alphabet = string.ascii_lowercase
+  alphabet_upper=alphabet.upper()
+  # First do the shifting thingy
+  for char in lowercase:
+    # Make sure the index does not exceed the key's length
+    if counter == len(key): counter = 0
+
+    if char not in alphabet:
+      encrypted += char
+    else:
+      index = alphabet.index(char)
+      
+      if mode == 'encrypt':
+        index += alphabet.index(key[counter])
+      else:
+        index -= alphabet.index(key[counter])
+
+      index %= len(alphabet)
+      encrypted += alphabet[index]
+      counter += 1
+  
+  # Restore cases
+  for x in range(len(encrypted)):
+    encrypted = list(encrypted)
+    if text[x] in alphabet_upper:
+      encrypted[x] = encrypted[x].upper()
+    
+  return ''.join(encrypted)
 
 MORSE_CODE_DICT = { 'A':'.-', 'B':'-...', 
                     'C':'-.-.', 'D':'-..', 'E':'.', 
@@ -87,13 +126,26 @@ class MyClient(discord.Client):
         else:
             prefix="&?"
         #print (message.channel.id)
-        if message.channel.id == 795999461364334612:
-            if message.content.lower() == "loon":
-                await message.channel.send(f"{message.author.mention} has done the current puzzle")
 
         if message.content.startswith(prefix):
             if message.content == f"{prefix}ping"  or message.content.startswith("&?ping"):
                 await message.channel.send('Pong')
+                
+            
+            elif message.content.startswith(f"{prefix}vignere_encrypt") or message.content.startswith("&?vignere_encrypt"):
+                text = message.content.split()
+                key = text[1]
+                text = ' '.join(text[2:])
+                enc = vignere(text, key, 'encrypt')
+                await message.channel.send(f'```{enc}```')
+                
+                
+            elif message.content.startswith(f"{prefix}vignere_decrypt") or message.content.startswith("&?vignere_decrypt"):
+                text = message.content.split()
+                key = text[1]
+                text = ' '.join(text[2:])
+                dec = vignere(text, key, 'decrypt')
+                await message.channel.send(f'```{dec}```')
 
             elif message.content.startswith(f"{prefix}reverse")  or message.content.startswith("&?reverse"):
                 cont=message.content.split()
@@ -108,12 +160,29 @@ class MyClient(discord.Client):
 
             elif message.content.startswith(f"{prefix}caesar")  or message.content.startswith("&?caesar"):
                 cont=message.content.split()
-                encrypt=''
-                for i in cont[2:]:
-                    encrypt=encrypt + " "+str(i)
-                key=int(cont[1])            
-                decrypt=caesar(encrypt,26-key)
-                await message.channel.send(f"```{decrypt}```")
+                     
+                try:
+                    encrypt=''
+                    for i in cont[2:]:
+                        encrypt=encrypt + " "+str(i)
+                    key=int(cont[1])     
+                    decrypt=caesar(encrypt,26-key)
+                    await message.channel.send(f"```{decrypt}```")
+                except:
+                    output_l=[]
+                    encrypt=''
+                    for i in cont[1:]:
+                        encrypt=encrypt + " "+str(i)
+                    for i in range(1,27):
+                        decrypt=caesar(encrypt,26-i)
+                        output_l.append(f"Key = {i}: {decrypt}")
+                    outp=''
+                    for i in output_l:
+                        outp=outp+i+"\n"
+                    await message.channel.send(f"```{outp}```")
+
+
+               
 
             elif message.content.startswith(f"{prefix}b64_decode") or message.content.startswith("&?b64_decode"):
                 cont=message.content.split()
@@ -211,6 +280,9 @@ class MyClient(discord.Client):
                 embed.add_field(name="Prefix", value="&?", inline=False)
                 embed.add_field(name="Commands", value="Below are the commands you can use with this bot", inline=False)
                 embed.add_field(name="Caesar Cipher Decode", value=f"{prefix}caesar [key] [code]", inline=False)
+                embed.add_field(name="Caesar Cipher Bruteforce", value=f"{prefix}caesar [code]", inline=False)
+                embed.add_field(name="Vignere Cipher Encode", value=f'{prefix}vignere_encrypt [key] [code]', inline=False)
+                embed.add_field(name='Vignere Cipher Decode', value=f'{prefix}vignere_decrypt [key] [code]', inline=False)
                 embed.add_field(name="a1z26", value=f"{prefix}a1z26 [code] (can be numbers/alphabets)", inline=False)
                 embed.add_field(name="Base64 Decode", value=f"{prefix}b64_decode [code] \n{prefix}b64_encode [code]", inline=False)
                 embed.add_field(name="Atbash", value=f"{prefix}atbash [code]", inline=False)
@@ -219,11 +291,11 @@ class MyClient(discord.Client):
                 embed.add_field(name="Feedback/Suggestion", value=f"{prefix}feedback [your feedback/suggestion]", inline=False)
                 embed.add_field(name="Invite", value=f"{prefix}invite", inline=False)
                 embed.add_field(name="Note:", value="The Prefix  `&?` is only required in servers. All the commands will work without the prefix in the bots DM.", inline=False)
-                embed.set_footer(text="Re-dcrypt Bot v0.6.4 Beta")
+                embed.set_footer(text="Re-dcrypt Bot v0.6.6 Beta")
                 embed2=discord.Embed(title="Community Server", url="https://discord.gg/c68aWWMruT", description="<a:BlobDiscord:779402415916580864> Join our community server <a:redcryptexcited:781090077748494336>", color=0x39ff14)
                 embed2.set_author(name="Re-Dcrypt", icon_url="https://i.imgur.com/ynad6vI.png")
                 embed2.set_thumbnail(url="https://i.imgur.com/ynad6vI.png")
-                embed2.set_footer(text="Re-dcrypt Bot v0.6.4 Beta")
+                embed2.set_footer(text="Re-dcrypt Bot v0.6.6 Beta")
                 await message.channel.send(embed=embed)
                 await message.channel.send(embed=embed2)
                 
@@ -235,7 +307,7 @@ class MyClient(discord.Client):
                 embed2=discord.Embed(title="Well that's unfortunate. The command that you entered couldn't be found", url="https://bit.ly/3dhfRHD", description=f"```{e404}```", color=0x39ff14)
                 embed2.set_author(name="Re-Dcrypt", icon_url="https://i.imgur.com/ynad6vI.png")
                 embed2.set_thumbnail(url="https://i.imgur.com/ynad6vI.png")
-                embed2.set_footer(text="Re-dcrypt Bot v0.6.1 Beta")
+                embed2.set_footer(text="Re-dcrypt Bot v0.6.6 Beta")
                 #await message.channel.send(f"```Well that's unfortunate. The command that you entered couldn't be found```")
                 await message.channel.send(embed=embed2)
 
