@@ -9,6 +9,49 @@ from art import *
 alphabet = string.ascii_lowercase
 alphabet_upper = alphabet.upper()
 
+bacon_dict_complete = {'A': 'AAAAA', 'B': 'AAAAB', 'C': 'AAABA', 'D': 'AAABB', 'E': 'AABAA', 'F': 'AABAB', 'G': 'AABBA', 'H': 'AABBB', 'I': 'ABAAA', 'J': 'ABAAB', 'K': 'ABABA', 'L': 'ABABB', 'M': 'ABBAA', 'N': 'ABBAB', 'O': 'ABBBA', 'P': 'ABBBB', 'Q': 'BAAAA', 'R': 'BAAAB', 'S': 'BAABA', 'T': 'BAABB', 'U': 'BABAA', 'V': 'BABAB', 'W': 'BABBA', 'X': 'BABBB', 'Y': 'BBAAA', 'Z': 'BBAAB'}
+
+
+bacon_dict_standard = {'A': 'AAAAA', 'B': 'AAAAB', 'C': 'AAABA', 'D': 'AAABB', 'E': 'AABAA', 'F': 'AABAB', 'G': 'AABBA', 'H': 'AABBB', 'I': 'ABAAA', 'J': 'ABAAA', 'K': 'ABAAB', 'L': 'ABABA', 'M': 'ABABB', 'N': 'ABBAA', 'O': 'ABBAB', 'P': 'ABBBA', 'Q': 'ABBBB', 'R': 'BAAAA', 'S': 'BAAAB', 'T': 'BAABA', 'U': 'BAABB', 'V': 'BAABB', 'W': 'BABAA', 'X': 'BABAB', 'Y': 'BABBA', 'Z': 'BABBB'}
+
+
+
+def bacon_encode(text, mode):
+  if mode == 'standard':
+    bacon_dict = bacon_dict_standard
+  else:
+    bacon_dict = bacon_dict_complete
+
+
+  # first clean up the plaintext
+  cleaned = ''
+  text = text.upper()
+  for char in text:
+    if char in alphabet: cleaned += char
+
+  ciphertext = ''
+  for char in cleaned:
+    ciphertext += bacon_dict[char] + " "
+
+  return ciphertext
+
+
+def bacon_decode(text, mode):
+
+  if mode == 'standard':
+    bacon_dict = bacon_dict_standard
+  else:
+    bacon_dict = bacon_dict_complete
+  
+  text = text.split()
+  bacon_dict = dict((v,k) for k,v in bacon_dict.items()) # See https://stackoverflow.com/a/50232911/14437456
+  plaintext = ''
+
+  for item in text:
+    plaintext += bacon_dict[item]
+  
+  return plaintext
+
 
 def caesar(text,s): 
     result = "" 
@@ -132,6 +175,24 @@ class MyClient(discord.Client):
                 await message.channel.send('Pong')
                 
             
+            elif message.content.startswith(f'{prefix}bacon_encrypt') or message.content.startswith('&?bacon_encrypt'):
+                mode = message.content.split()[1].lower()
+                msg = message.content.split()[2:]
+                
+                if mode not in ['standard', 'complete']:
+                    return await message.channel.send(f'```⚠ That is not an available mode. Please choose "standard" (I=J, U=V) , or "complete".```'
+                                                      
+                await message.channel.send(f'```{bacon_encode(msg, mode)}```')
+            
+            elif message.content.startswith(f'{prefix}bacon_decrypt') or message.content.startswith('&?bacon_decrypt'):
+                mode = message.content.split()[1].lower()
+                msg = message.content.split()[2:]
+                                                      
+                if mode not in ['standard', 'complete']:
+                    return await message.channel.send(f'```⚠ That is not an available mode. Please choose "standard" (I=J, U=V) , or "complete".```'
+                
+                await message.channel.send(f'```{bacon_decode(msg, mode)}```')                                      
+                                                      
             elif message.content.startswith(f"{prefix}vignere_encrypt") or message.content.startswith("&?vignere_encrypt"):
                 text = message.content.split()
                 key = text[1]
@@ -283,8 +344,9 @@ class MyClient(discord.Client):
                 embed.add_field(name="Caesar Cipher Bruteforce", value=f"{prefix}caesar [code]", inline=False)
                 embed.add_field(name="Vignere Cipher Encode", value=f'{prefix}vignere_encrypt [key] [code]', inline=False)
                 embed.add_field(name='Vignere Cipher Decode', value=f'{prefix}vignere_decrypt [key] [code]', inline=False)
+                embed.add_field(name='Baconian Cipher', value=f'{prefix}bacon_encrypt [standard/complete] [message] \n {prefix}bacon_decrypt [standard/complete] [message] \nStandard = (I=J, U=V)', inline=False)
                 embed.add_field(name="a1z26", value=f"{prefix}a1z26 [code] (can be numbers/alphabets)", inline=False)
-                embed.add_field(name="Base64 Decode", value=f"{prefix}b64_decode [code] \n{prefix}b64_encode [code]", inline=False)
+                embed.add_field(name="Base64", value=f"{prefix}b64_decode [code] \n{prefix}b64_encode [code]", inline=False)
                 embed.add_field(name="Atbash", value=f"{prefix}atbash [code]", inline=False)
                 embed.add_field(name="Morse Code", value=f"{prefix}morse [code/text] (This will automatically decode the morse & encode the text)", inline=False)
                 embed.add_field(name="Text reverse", value=f"{prefix}reverse [text]", inline=False)
