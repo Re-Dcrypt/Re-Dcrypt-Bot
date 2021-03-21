@@ -2,7 +2,7 @@
 ### Re-Dcrypt is a bot that will help you decode many ciphers like caesar, base64, A1Z26 & Atbash.
 
 ## Invite Link:
-https://discord.com/api/oauth2/authorize?client_id=775629409494630410&permissions=67451968&scope=bot
+https://discord.com/api/oauth2/authorize?client_id=775629409494630410&permissions=346176&redirect_uri=https%3A%2F%2Fbot.redcrypt.ml&scope=bot%20applications.commands
 
 ### Prefix
 
