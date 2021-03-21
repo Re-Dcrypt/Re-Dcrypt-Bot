@@ -1,423 +1,251 @@
+version = "Re-dcrypt Bot v0.9.8 Beta"
+
+
+print(f'Starting {version}...')
+
 import discord
+from discord.ext import commands
 #import Cipher #pip install CipherModule
 import string
 import os
 import base64
 import binascii
 from art import *
-
-alphabet = string.ascii_lowercase
-alphabet_upper = alphabet.upper()
-
-
-def caesar(text,s): 
-    result = "" 
-
-    for i in range(1,len(text)): 
-        char = text[i] 
-        if char.isalpha():
-            if char != " ":
-                if (char.isupper()): 
-                    result += chr((ord(char) + s-65) % 26 + 65) 
-        
-                else: 
-                    result += chr((ord(char) + s - 97) % 26 + 97) 
-            else:
-                result=result+ char
-        else:
-            result += char
-    return result
+import asyncio
+from discord_slash import SlashCommand
+from utils import *
+import typing
 
 
-def vignere(text, key, mode):
-  lowercase = text.lower()
-  encrypted = ''
-  index = None
-  counter = 0
-  alphabet = string.ascii_lowercase
-  alphabet_upper=alphabet.upper()
-  # First do the shifting thingy
-  for char in lowercase:
-    # Make sure the index does not exceed the key's length
-    if counter == len(key): counter = 0
 
-    if char not in alphabet:
-      encrypted += char
-    else:
-      index = alphabet.index(char)
-      
-      if mode == 'encrypt':
-        index += alphabet.index(key[counter])
-      else:
-        index -= alphabet.index(key[counter])
+help_dict={
+	'Prefix':'&?' ,
+	'Commands': 'Below are the commands you can use with this bot',
+	'Caesar': ['```&?caesar [key] [code]\n&?caesar [code] (This will brute force with all keys)```' , 'For eg. `&?caesar 5 Sjajw Ltssf Lnaj Dtz Zu`'],
+	'Vigenere': ['```&?vigenere_encode [key] [code]\n&?vigenere_decode [key] [code]```', 'For eg `&?vigenere_decode rick ymnvf eqbcl`'],
+	'null':["```&?null [text]```","For eg. `&?null george owns one green little elephant`"],
+	'a1z26': ['```&?a1z26 [code] (can be numbers/alphabets)```', "For eg. `&?a1z26 7 15 15 7 12 5` or `&?a1z26 Microsoft `"],
+	'base64':['```&?b64_decode [code]\n&?b64_encode [code]```','For eg `&?base64_decode UmUtRGNyeXB0` or `&?base64_encode monke`'],
+	'atbash':['```&?atbash [code]```', "For eg. `&?atbash blf pmld gsv ifovh & hl wl r`"],
+	'morse': ['```&?morse [code/text]\n(This will automatically decode the morse & encode the text)```', "For eg. `&?morse  ... --- -- . - .... .. -. --.  / .--- ..- ... -  / .-.. .. -.- .  / - .... .. ...`"],
+	'tap':['```&?tap [code/text] \n(This will automatically decode the tap code & encode the text)```',"For eg. `&?tap ... .... ... ..... . ..... ... ...  / .. ... . . ... ..... ... ..... .. .... ... ... . ..... .... ... .... ... `"],
+	'bacon':["```&?bacon_encode [text]\n&?bacon_decode [code]\n&?bacon_encode [complete] [text]\n&?bacon_decode [complete] [code]\n\nNote: By default Bacon cipher will decrypt/encrypt in the standard (I=J, U=V) form. If you need to encrypt/decrypt in complete form of bacon cipher then you need to mention it.```","For eg. `&?bacon_decode AABBA ABBAB ABBAB AABBA ABABA AABAA ` or `&?bacon_encode Google`"],
+	'reverse':['```&?reverse [text]```', "For eg. `&?reverse olleh`"],
+	'slash':"```You can use slash commands as well. They are much more simpler to use & don't require you to remember the commands. The format is predifened & you just have to select the things.```"
 
-      index %= len(alphabet)
-      encrypted += alphabet[index]
-      counter += 1
-  
-  # Restore cases
-  for x in range(len(encrypted)):
-    encrypted = list(encrypted)
-    if text[x] in alphabet_upper:
-      encrypted[x] = encrypted[x].upper()
+}
+
+def helpcmd(arg):
+	embed = discord.Embed(title='Bot Help', colour=discord.Colour(0x39ff14))
+	embed.set_author(name='Re-Dcrypt', icon_url='https://i.imgur.com/ynad6vI.png')
+	if arg==None:
+		embed.add_field(name='Prefix', value='&?', inline=True)
+		embed.add_field(name='Commands:',value=f'{help_dict["Commands"]}')
+		embed.add_field(name='Caesar Cipher Decode', value=f"{help_dict['Caesar'][0]}", inline=False)
+		embed.add_field(name='Vigenere Cipher', value=f"{help_dict['Vigenere'][0]}",inline=False)
+		embed.add_field(name='Null Cipher', value=f"{help_dict['null'][0]}",inline=False)
+
+		embed.add_field(name='a1z26',value=f"{help_dict['a1z26'][0]}", inline=False)
+		embed.add_field(name='Base64',value=f"{help_dict['base64'][0]}",inline=True)
+		embed.add_field(name='Atbash',value=f"{help_dict['atbash'][0]}", inline=True)
+		embed.add_field(name='Morse Code',value=f"{help_dict['morse'][0]}",inline=False)
+		embed.add_field(name='Tap Code',value=f"{help_dict['tap'][0]}")
+		embed.add_field(name='Bacon/Baconian Cipher',value=f"{help_dict['bacon'][0]}", inline=False)
+		embed.add_field(name='Text Reverse',value=f"{help_dict['reverse'][0]}", inline=True)
+		embed.add_field(name='Feedback/Suggestion',value='''```&?feedback [your feedback/suggestion]```''',inline=True)
+		embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
+		embed.add_field(name='Slash Commands',value="""```diff\n+ Most of the above commands are available as slash commands as well. For Slash commands, you just have to type `/` and then you will see multiple options for the commands. The format is also predefined in the slash commands so you don't have to remember anything.\n```""")
+		embed.add_field(name='About:',value='''***Re-Dcrypt Bot v0.9.8 Beta***\n<a:BlobDiscord:779402415916580864> [Invite Me](https://discord.com/api/oauth2/authorize?client_id=775629409494630410&permissions=346176&redirect_uri=https%3A%2F%2Fbot.redcrypt.ml&scope=bot%20applications.commands)\n<a:redcryptexcited:781090077748494336> [Our Community Server](https://discord.gg/c68aWWMruT)''',inline=False)
+
+	elif arg.lower().startswith('caesar'):
+		embed.add_field(name='Caesar Cipher Decode', value=f"{help_dict['Caesar'][0]}\n {help_dict['Caesar'][1]}", inline=False)
+        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
+		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
+
+
+	elif arg.lower().startswith('vigenere'):
+		embed.add_field(name='Vigenere Cipher', value=f"{help_dict['Vigenere'][0]}\n {help_dict['Vigenere'][1]}", inline=False)
+        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
+		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
+
+	elif arg.lower().startswith('a1z26'):
+		embed.add_field(name='a1z26', value=f"{help_dict['a1z26'][0]}\n {help_dict['a1z26'][1]}", inline=False)
+        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
+		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
+
+	elif arg.lower().startswith('base64'):
+		embed.add_field(name='Base64', value=f"{help_dict['base64'][0]}\n {help_dict['base64'][1]}", inline=False)
+        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
+		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
+
+	elif arg.lower().startswith('null'):
+		embed.add_field(name='null', value=f"{help_dict['null'][0]}\n {help_dict['null'][1]}", inline=False)
+        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
+		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
+
+	elif arg.lower().startswith('atbash'):
+		embed.add_field(name='Atbash Cipher', value=f"{help_dict['atbash'][0]}\n {help_dict['atbash'][1]}", inline=False)
+        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
+		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
+
+	elif arg.lower().startswith('morse'):
+		embed.add_field(name='Morse Code', value=f"{help_dict['morse'][0]}\n {help_dict['morse'][1]}", inline=False)
+        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
+		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
+
+	elif arg.lower().startswith('tap'):
+		embed.add_field(name='Tap Code', value=f"{help_dict['tap'][0]}\n {help_dict['tap'][1]}", inline=False)
+        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
+		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
+
+	elif arg.lower().startswith('bacon'):
+		embed.add_field(name='Bacon Cipher', value=f"{help_dict['bacon'][0]}\n {help_dict['bacon'][1]}", inline=False)
+        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
+		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
+
+	else:
+		embed.add_field(name="Error the command that you entered could not be found", value="[You can type `&?help` to see a list of all commands](https://bit.ly/2PbNIbf)")
+
+	return embed
+
+
+async def errormsg(msg, error):
+    messages = await msg.channel.history(limit=2).flatten()
+    embed=discord.Embed(title="Some Unknown Error Occured", description=f"The command that you tried (`{messages[0].content}`) encountered an error.", color=0xff0000)
+    embed.set_author(name="Re-Dcrypt", icon_url="https://i.imgur.com/ynad6vI.png")
+    embed.add_field(name='Error for all those nerdy kids out there', value=f'```{error}```')
     
-  return ''.join(encrypted)
-
-MORSE_CODE_DICT = { 'A':'.-', 'B':'-...', 
-                    'C':'-.-.', 'D':'-..', 'E':'.', 
-                    'F':'..-.', 'G':'--.', 'H':'....', 
-                    'I':'..', 'J':'.---', 'K':'-.-', 
-                    'L':'.-..', 'M':'--', 'N':'-.', 
-                    'O':'---', 'P':'.--.', 'Q':'--.-', 
-                    'R':'.-.', 'S':'...', 'T':'-', 
-                    'U':'..-', 'V':'...-', 'W':'.--', 
-                    'X':'-..-', 'Y':'-.--', 'Z':'--..', 
-                    '1':'.----', '2':'..---', '3':'...--', 
-                    '4':'....-', '5':'.....', '6':'-....', 
-                    '7':'--...', '8':'---..', '9':'----.', 
-                    '0':'-----', ', ':'--..--', '.':'.-.-.-', 
-                    '?':'..--..', '/':'-..-.', '-':'-....-', 
-                    '(':'-.--.', ')':'-.--.-' , ' ':'/'} 
-
-tap_code_dict={'A':'. .' , 'B':'. ..', 'C':'. ...','K':'. ...', 'D':'. ....' , 'E':'. .....'
-            ,'F':'.. .','G':'.. ..', 'H':'.. ...', 'I':'.. ....' , 'J':'.. .....'
-            ,'L':'... .','M':'... ..', 'N':'... ...', 'O':'... ....' , 'P':'... .....'
-            ,'Q':'.... .','R':'.... ..', 'S':'.... ...', 'T':'.... ....' , 'U':'.... .....'
-            ,'V':'..... .','W':'..... ..', 'X':'..... ...', 'Y':'..... ....' , 'Z':'..... .....', ' ':'/ /'}
-
-def morse_encrypt(message): 
-    cipher = '' 
-    for letter in message: 
-        if letter != ' ': 
-            cipher += MORSE_CODE_DICT[letter.upper()] + ' '
-        else: 
-            cipher += ' / '
-  
-    return cipher 
-
-def morse_decrypt(message): 
-    message += ' '
-    decipher = '' 
-    citext = '' 
-    for letter in message: 
-        i=0
-        if (letter != ' '):   
-            i = 0
-            
-            citext += letter 
-        else:
-            i += 1
-            if i == 2 : 
-                decipher += ' '
-            else: 
-                decipher += list(MORSE_CODE_DICT.keys())[list(MORSE_CODE_DICT 
-                .values()).index(citext)] 
-                citext = '' 
-  
-    return decipher 
-
-def tap_encrypt(message): 
-    cipher = '' 
-    for letter in message: 
-        if letter != ' ': 
-            cipher += tap_code_dict[letter.upper()] + ' '
-        else: 
-            cipher += ' / '
-  
-    return cipher 
-
-def tap_decrypt(message): 
-    message=message.replace("/"," / / ")
-    message_pair=[]
-    i=0
-    while i < (len(message.split())-1):
-        temp_str=message.split()[i] + " "+message.split()[i+1]
-        message_pair.append(temp_str)
-        i=i+2
-    decipher = '' 
-    for letter in message_pair: 
-            decipher += list(tap_code_dict.keys())[list(tap_code_dict .values()).index(letter)]   
-    return decipher 
-
-bacon_dict_complete = {'A': 'AAAAA', 'B': 'AAAAB', 'C': 'AAABA', 'D': 'AAABB', 'E': 'AABAA', 'F': 'AABAB', 'G': 'AABBA', 'H': 'AABBB', 'I': 'ABAAA', 'J': 'ABAAB', 'K': 'ABABA', 'L': 'ABABB', 'M': 'ABBAA', 'N': 'ABBAB', 'O': 'ABBBA', 'P': 'ABBBB', 'Q': 'BAAAA', 'R': 'BAAAB', 'S': 'BAABA', 'T': 'BAABB', 'U': 'BABAA', 'V': 'BABAB', 'W': 'BABBA', 'X': 'BABBB', 'Y': 'BBAAA', 'Z': 'BBAAB'}
-
-
-bacon_dict_standard = {'A': 'AAAAA', 'B': 'AAAAB', 'C': 'AAABA', 'D': 'AAABB', 'E': 'AABAA', 'F': 'AABAB', 'G': 'AABBA', 'H': 'AABBB', 'I': 'ABAAA', 'J': 'ABAAA', 'K': 'ABAAB', 'L': 'ABABA', 'M': 'ABABB', 'N': 'ABBAA', 'O': 'ABBAB', 'P': 'ABBBA', 'Q': 'ABBBB', 'R': 'BAAAA', 'S': 'BAAAB', 'T': 'BAABA', 'U': 'BAABB', 'V': 'BAABB', 'W': 'BABAA', 'X': 'BABAB', 'Y': 'BABBA', 'Z': 'BABBB'}
-
-
-
-def bacon_encode(text, mode):
-    if mode == 'standard':
-        bacon_dict = bacon_dict_standard
+    if msg.guild != None:
+        embed.add_field(name="Want to submit this bug to the developer?", value="React to this message with ❗ within the next 10 seconds to send this bug to the developer.", inline=False)
     else:
-        bacon_dict = bacon_dict_complete
+        embed.add_field(name="Want to submit this bug to the developer?", value="Respond with `!report` within the next 10 seconds to send this bug to the developer.", inline=False)
+    
+    to_react = await msg.channel.send(embed=embed)
 
-    text = text.upper()
-    ciphertext = ''
-    for char in text:
-        try:
-            ciphertext += bacon_dict[char] + " "
-        except:
-            ciphertext += char + " "
+    if msg.guild == None:
+        pass
+    else:
+        await to_react.add_reaction('❗')
+    
+    def checkg(reaction, user):
+        return user == msg.author and str(reaction.emoji) == '❗'
+    
+    def check(m):
+        return m.content.lower() == '!report' and m.channel == msg.channel
 
-    return ciphertext
-
-
-def bacon_decode(text, mode):
-
-  if mode == 'standard':
-    bacon_dict = bacon_dict_standard
-  else:
-    bacon_dict = bacon_dict_complete
-
-  text = text.split()
-  bacon_dict = dict((v,k) for k,v in bacon_dict.items()) # See https://stackoverflow.com/a/50232911/14437456
-  plaintext = ''
-
-  for item in text:
-    plaintext += bacon_dict[item]
-
-  return plaintext
-
-class MyClient(discord.Client):
-    async def on_ready(self):
-        activity = discord.Game(name="&?help")
-        await client.change_presence(activity=activity)
-        print('Logged on as', self.user)
-
-
-
-    async def on_message(self, message):
-        # don't respond to ourselves
-        if message.author == self.user:
-            return
-
-        #print (message.guild)
-        if message.guild == None:
-            prefix=''
+    try:
+        if msg.guild == None:
+            msgi = await bot.wait_for('message', timeout=10., check=check)
         else:
-            prefix="&?"
-        #print (message.channel.id)
-
-        if message.content.startswith(prefix):
-            if message.content == f"{prefix}ping"  or message.content.startswith("&?ping"):
-                await message.channel.send('Pong')
-                
-            
-            elif message.content.startswith(f"{prefix}vignere_encrypt") or message.content.startswith("&?vignere_encrypt"):
-                text = message.content.split()
-                key = text[1]
-                text = ' '.join(text[2:])
-                enc = vignere(text, key, 'encrypt')
-                await message.channel.send(f'```{enc}```')
-                
-                
-            elif message.content.startswith(f"{prefix}vignere_decrypt") or message.content.startswith("&?vignere_decrypt"):
-                text = message.content.split()
-                key = text[1]
-                text = ' '.join(text[2:])
-                dec = vignere(text, key, 'decrypt')
-                await message.channel.send(f'```{dec}```')
-
-            elif message.content.startswith(f"{prefix}reverse")  or message.content.startswith("&?reverse"):
-                cont=message.content.split()
-                encrypt=''
-                for i in cont[1:]:
-                    encrypt=encrypt + " "+str(i)
-                rev=encrypt[::-1]
-                await message.channel.send(f"```{rev}```")
-
-            elif message.content == f"{prefix}stats":
-                await message.channel.send(f"Currently I'm in {len(client.guilds)} servers")
-
-            elif message.content.startswith(f"{prefix}caesar")  or message.content.startswith("&?caesar"):
-                cont=message.content.split()
-                     
-                try:
-                    encrypt=''
-                    for i in cont[2:]:
-                        encrypt=encrypt + " "+str(i)
-                    key=int(cont[1])     
-                    decrypt=caesar(encrypt,26-key)
-                    await message.channel.send(f"```{decrypt}```")
-                except:
-                    output_l=[]
-                    encrypt=''
-                    for i in cont[1:]:
-                        encrypt=encrypt + " "+str(i)
-                    for i in range(1,27):
-                        decrypt=caesar(encrypt,26-i)
-                        output_l.append(f"Key = {i}: {decrypt}")
-                    outp=''
-                    for i in output_l:
-                        outp=outp+i+"\n"
-                    await message.channel.send(f"```{outp}```")
+            reaction, user = await bot.wait_for('reaction_add', timeout=10.0, check=checkg)
+    except asyncio.TimeoutError:
+        pass
+    else:
+        embed=discord.Embed(title="Bug Report", color=0xff0000)
+        embed.set_author(name=msg.author, icon_url=msg.author.avatar_url)
+        embed.add_field(name="Command:", value=f"{messages[0].content}", inline=False)
+        embed.add_field(name="Error Details: ", value=f'```{error}```')
+        bchannel=bot.get_channel(819587658169843782)
+        await bchannel.send(embed=embed)
+        await msg.channel.send(f"```Bug reported to the developer```")
 
 
-               
-            elif message.content.startswith(f'{prefix}bacon_encrypt') or message.content.startswith('&?bacon_encrypt'):
-                msg=''
-                if message.content.split()[1].lower() != 'complete':
-                    for i in message.content.split()[1:]:
-                        msg=msg + " " + i
-                    mode='standard'
-                else:
-                    for i in message.content.split()[2:]:
-                        msg=msg + " " + i
-                    mode='complete'
-                
-                await message.channel.send(f'```{bacon_encode(msg, mode)}```')
 
-            elif message.content.startswith(f'{prefix}bacon_decrypt') or message.content.startswith('&?bacon_decrypt'):
-                msg=""
-                if message.content.split()[1].lower() != 'complete':
-                    for i in message.content.split()[1:]:
-                        msg=msg + " " + i
-                    mode='standard'
-                else:
-                    for i in message.content.split()[2:]:
-                        msg=msg + " " + i
-                    mode='complete'
-                
-                await message.channel.send(f'```{bacon_decode(msg, mode)}```')       
-            
-            elif message.content.startswith(f"{prefix}b64_decode") or message.content.startswith("&?b64_decode"):
-                cont=message.content.split()
-                encrypt=''
-                for i in cont[1:]:
-                    encrypt=encrypt + " " + str(i)         
 
-                padding_needed = len(encrypt) % 4
-                if padding_needed:
-                    encrypt += '===' # See https://stackoverflow.com/a/49459036/14437456
-                
-                decrypt = base64.b64decode(encrypt).decode('utf-8')
-                await message.channel.send(f"```{decrypt}```")
-            
 
-            elif message.content.startswith(f"{prefix}b64_encode")  or message.content.startswith("&?b64_encode"):
-                to_encrypt = ' '.join(message.content.split()[1:])
-                message_bytes = to_encrypt.encode('ascii')
-                base64_bytes = base64.b64encode(message_bytes)
-                base64_message = base64_bytes.decode('ascii')
-                await message.channel.send(f'```{base64_message}```')
 
-            elif message.content.startswith(f"{prefix}a1z26")  or message.content.startswith("&?a1z26"):
-                alphabets=list(string.ascii_lowercase)
-                cont=message.content.split()
-                encrypt=''
-                num_list=[]
-                for i in cont[1:]:
-                    encrypt=encrypt + " " + str(i)
-                    try:
-                        num_list.append(int(i))                
-                    except:
-                        pass
-                decrypt=''
-                if cont[1].isalpha():
-                    for i in encrypt:
-                        try:
-                            z=i.lower()
-                            decrypt=decrypt+' '+str(alphabets.index(z)+1)
-                        except:
-                            decrypt=decrypt+str(i)
-                else:
-                    for i in num_list:
-                        decrypt=decrypt + " " + str(alphabets[i-1])
-                
-                
-                await message.channel.send(f"``` {decrypt} ```")
 
-            elif message.content.startswith(f"{prefix}atbash")  or message.content.startswith("&?atbash"):
-                alphabets=list(string.ascii_lowercase)
-                cont=message.content.split()
-                encrypt=''
-                num_list=[]
-                for i in cont[1:]:
-                    encrypt=encrypt + " " + str(i)
 
-                decrypt=''
+def command_prefix(bot, message):
+    if message.guild is None:
+        return ''
+    else:
+        return '&?'
 
-                for i in encrypt:
-                    try:
-                        decrypt=decrypt+(alphabets[25-alphabets.index(i.lower())])
-                    except:
-                        decrypt=decrypt+str(i)
-                        
-                await message.channel.send(f"```{decrypt}```")
-        
-            elif message.content.startswith(f"{prefix}morse") or message.content.startswith("&?morse"):
-                cont=message.content.split()
-                encrypt=''
-                for i in cont[1:]:
-                    encrypt=encrypt + " " + str(i)
-                try:
-                    await message.channel.send(f"```{morse_decrypt(encrypt[1:])}```")
-                except:
-                    await message.channel.send(f"```{morse_encrypt(encrypt[1:])}```")
 
-            elif message.content.startswith(f"{prefix}tap") or message.content.startswith("&?tap"):
-                cont=message.content.split()
-                encrypt=''
-                for i in cont[1:]:
-                    encrypt=encrypt + " " + str(i)
-                if len(encrypt.split())==1:
-                    await message.channel.send(f"```{tap_encrypt(encrypt[1:])}```")                    
-                else:
-                    try:
-                        await message.channel.send(f"```{tap_decrypt(encrypt)}```")
-                    except:
-                        await message.channel.send(f"```{tap_encrypt(encrypt[1:])}```")                    
+async def get_prefix(ctx):
+  return '' if ctx.guild is None else '&?'
 
-            elif message.content.startswith(f"{prefix}feedback") or message.content.startswith("&?feedback"):
-                cont=message.content.replace('&?feedback ','')
-                channel=client.get_channel(810404758706716672)
-                embed=discord.Embed(title="New Feedback", description=cont, color=0x39ff14)
-                embed.set_author(name=message.author, icon_url=message.author.avatar_url)
-                mess = await channel.send(embed=embed)
-                emoji1='\N{THUMBS UP SIGN}'
-                emoji2='\N{THUMBS DOWN SIGN}'
-                await mess.add_reaction(emoji1)
-                await mess.add_reaction(emoji2)
-                #await channel.send(f'{message.author} sent a feedback: {cont}')
-                await message.channel.send('Feedback sent')
-                
-            elif message.content.startswith(f"{prefix}help") or message.content.startswith("&?help"):
-                embed=discord.Embed(title="<a:redcryptexcited:781090077748494336> Re-Dcrypt Bot Help <a:redcryptexcited:781090077748494336>", description="Re-Dcrypt Bot is a bot that will help you decode many ciphers like caesar , base64, A1Z26 & Atbash.", color=0x39ff14)
-                embed.set_author(name="Re-Dcrypt", icon_url="https://i.imgur.com/ynad6vI.png")
-                embed.set_thumbnail(url="https://i.imgur.com/ynad6vI.png")
-                embed.add_field(name="Prefix", value="&?", inline=False)
-                embed.add_field(name="Commands", value="Below are the commands you can use with this bot", inline=False)
-                embed.add_field(name="Caesar Cipher Decode", value=f"{prefix}caesar [key] [code] \n{prefix}caesar [code]  (This will bruteforce with all keys)", inline=False)
-                embed.add_field(name="Bacon/Baconian Cipher", value=f'{prefix}bacon_encrypt [text] \n{prefix}bacon_decrypt [code] \n{prefix}bacon_encrypt [complete] [text] \n{prefix}bacon_decrypt [complete] [code] \n**Note**: By default Bacon cipher will decrrypt/encrypt in the standard form. If you need to encrypt/decrypt in complete form of bacon cipher then you need to mention it. ', inline=False)
-                embed.add_field(name="Vignere Cipher", value=f'{prefix}vignere_encrypt [key] [code] \n{prefix}vignere_decrypt [key] [code]', inline=False)
-                embed.add_field(name="a1z26", value=f"{prefix}a1z26 [code] (can be numbers/alphabets)", inline=False)
-                embed.add_field(name="Base64 Decode", value=f"{prefix}b64_decode [code] \n{prefix}b64_encode [code]", inline=False)
-                embed.add_field(name="Atbash", value=f"{prefix}atbash [code]", inline=False)
-                embed.add_field(name="Morse Code", value=f"{prefix}morse [code/text] (This will automatically decode the morse & encode the text)", inline=False)
-                embed.add_field(name="Tap Code", value=f"{prefix}morse [code/text] (This will automatically decode the tap code & encode the text)", inline=False)
-                embed.add_field(name="Text reverse", value=f"{prefix}reverse [text]", inline=False)
-                embed.add_field(name="Feedback/Suggestion", value=f"{prefix}feedback [your feedback/suggestion]", inline=False)
-                embed.add_field(name="Invite", value=f"{prefix}invite", inline=False)
-                embed.add_field(name="Note:", value="The Prefix  `&?` is only required in servers. All the commands will work without the prefix in the bots DM.", inline=False)
-                embed.set_footer(text="Re-dcrypt Bot v0.7 Beta")
-                embed2=discord.Embed(title="Community Server", url="https://discord.gg/c68aWWMruT", description="<a:BlobDiscord:779402415916580864> Join our community server <a:redcryptexcited:781090077748494336>", color=0x39ff14)
-                embed2.set_author(name="Re-Dcrypt", icon_url="https://i.imgur.com/ynad6vI.png")
-                embed2.set_thumbnail(url="https://i.imgur.com/ynad6vI.png")
-                embed2.set_footer(text="Re-dcrypt Bot v0.7 Beta")
-                await message.channel.send(embed=embed)
-                await message.channel.send(embed=embed2)
-                
-            elif message.content.startswith(f"{prefix}invite")  or message.content.startswith("&?invite"):
-                await message.channel.send('https://discord.com/api/oauth2/authorize?client_id=775629409494630410&permissions=67451968&scope=bot')
-            
-            else:
-                e404 = text2art("404","banner3")
-                embed2=discord.Embed(title="Well that's unfortunate. The command that you entered couldn't be found", url="https://bit.ly/3dhfRHD", description=f"```{e404}```", color=0x39ff14)
-                embed2.set_author(name="Re-Dcrypt", icon_url="https://i.imgur.com/ynad6vI.png")
-                embed2.set_thumbnail(url="https://i.imgur.com/ynad6vI.png")
-                embed2.set_footer(text="Re-dcrypt Bot v0.7 Beta")
-                #await message.channel.send(f"```Well that's unfortunate. The command that you entered couldn't be found```")
-                await message.channel.send(embed=embed2)
+bot = commands.Bot(command_prefix)
+slash = SlashCommand(bot, sync_commands=True)
+bot.remove_command('help') # default help command SUCKS
 
-client = MyClient()
+
+
+
+
+
+
+@bot.event
+async def on_ready():   
+  print(f'Logged in as {bot.user}!')
+  activity = discord.Game(name=f"&?help | on {len(bot.guilds)} servers")
+  await bot.change_presence(activity=activity)
+
+@bot.event
+async def on_guild_join(self):
+	activity = discord.Game(name=f"&?help | on {len(bot.guilds)} servers")
+	await bot.change_presence(activity=activity)
+  
+@bot.event
+async def on_guild_remove(self):
+	activity = discord.Game(name=f"&?help | on {len(bot.guilds)} servers")
+	await bot.change_presence(activity=activity)
+  
+
+
+@bot.event
+async def on_command_error(ctx, error):
+  if isinstance(error, commands.CommandNotFound):
+    if ctx.guild != None:
+      await ctx.message.add_reaction('<a:blobthink:821039137037090818>')
+
+  
+  else:
+			await errormsg(ctx, error)
+
+
+
+
+@bot.command()
+async def help(ctx,*,arg: typing.Optional[str] = None):
+    await ctx.send(embed=helpcmd(arg))
+
+
+
+@bot.command()
+async def invite(ctx):
+  await ctx.send('https://discord.com/api/oauth2/authorize?client_id=775629409494630410&permissions=67451968&scope=bot')
+
+@bot.command()
+async def feedback(ctx,*, cont):
+  channel=bot.get_channel(810404758706716672)
+  embed=discord.Embed(title="New Feedback", description=cont, color=0x39ff14)
+  embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
+  mess = await channel.send(embed=embed)
+  emoji1='\N{THUMBS UP SIGN}'
+  emoji2='\N{THUMBS DOWN SIGN}'
+  await mess.add_reaction(emoji1)
+  await mess.add_reaction(emoji2)
+  #await channel.send(f'{message.author} sent a feedback: {cont}')
+  await ctx.send('Feedback sent')
+
+
+#guild_ids=[769828955023736854]
+
+	
+
+print('Loading basic cogs...')
+bot.load_extension("cogs.basic")
+
+print('Loading cipher cogs...')
+bot.load_extension("cogs.cipher")
+
+print('Loading other cogs...')
+bot.load_extension("cogs.others")
+
+print('Loading slash commands...')
+bot.load_extension("cogs.slash")
+
+print('Firing up the Flux Capacitors...')
+bot.run(os.getenv('TOKEN'))
