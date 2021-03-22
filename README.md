@@ -60,3 +60,6 @@ Below are the commands you can use with this bot
 ### Note:
 
 The Prefix &? is only required in servers. All the commands will work without the prefix in the bots DM.
+
+### Slash Commands
+ Most of the above commands are available as slash commands as well. For Slash commands, you just have to type `/` and then you will see multiple options for the commands. The format is also predefined in the slash commands so you don't have to remember anything.
