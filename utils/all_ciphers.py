@@ -1,7 +1,7 @@
 import string
 import base64 as b64
 import string
-
+import re
 
 alphabet = string.ascii_lowercase
 alphabet_upper = alphabet.upper()
@@ -278,7 +278,9 @@ def null(string):
     return res
 
 def polybius_encrypt(string, square):
-
+  string = re.sub(r'[^A-Za-z]', '', string)
+  string = string.lower()
+  
   encrypted = []
   for i in string:
     n = square.find(i) + 1
