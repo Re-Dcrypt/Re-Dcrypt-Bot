@@ -1,4 +1,4 @@
-version = "Re-dcrypt Bot v0.9.8 Beta"
+version = "Re-dcrypt Bot v0.9.9 Beta"
 
 
 print(f'Starting {version}...')
@@ -31,6 +31,7 @@ help_dict={
 	'tap':['```&?tap [code/text] \n(This will automatically decode the tap code & encode the text)```',"For eg. `&?tap ... .... ... ..... . ..... ... ...  / .. ... . . ... ..... ... ..... .. .... ... ... . ..... .... ... .... ... `"],
 	'bacon':["```&?bacon_encode [text]\n&?bacon_decode [code]\n&?bacon_encode [complete] [text]\n&?bacon_decode [complete] [code]\n\nNote: By default Bacon cipher will decrypt/encrypt in the standard (I=J, U=V) form. If you need to encrypt/decrypt in complete form of bacon cipher then you need to mention it.```","For eg. `&?bacon_decode AABBA ABBAB ABBAB AABBA ABABA AABAA ` or `&?bacon_encode Google`"],
 	'reverse':['```&?reverse [text]```', "For eg. `&?reverse olleh`"],
+  'polybius':["```&?polybius_encrypt [text]\n&?polybius_decrypt [code]\n\nNote: Since Polybius Cipher uses a custom alphabet, there will be a choice to use a default alphabet, create an alphabet from a keyword (If you input \"cipher\", the alphabet will be cipherabdfgklmnoqstuvwxyz), and to input your own alphabet.```", "For eg. `&polybius_encrypt hello world`, `&>polybius_decrypt 34 20 52 20 43 22 40 34 34 11 22 24 52 20 60 40 51 51 41`"],
 	'slash':"```You can use slash commands as well. They are much more simpler to use & don't require you to remember the commands. The format is predifened & you just have to select the things.```"
 
 }
@@ -52,6 +53,7 @@ def helpcmd(arg):
 		embed.add_field(name='Tap Code',value=f"{help_dict['tap'][0]}")
 		embed.add_field(name='Bacon/Baconian Cipher',value=f"{help_dict['bacon'][0]}", inline=False)
 		embed.add_field(name='Text Reverse',value=f"{help_dict['reverse'][0]}", inline=True)
+		embed.add_field(name='Polybius Cipher',value=f'{help_dict["polybius"][0]}', inline=False)
 		embed.add_field(name='Feedback/Suggestion',value='''```&?feedback [your feedback/suggestion]```''',inline=True)
 		embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
 		embed.add_field(name='Slash Commands',value="""```diff\n+ Most of the above commands are available as slash commands as well. For Slash commands, you just have to type `/` and then you will see multiple options for the commands. The format is also predefined in the slash commands so you don't have to remember anything.\n```""")
@@ -59,49 +61,45 @@ def helpcmd(arg):
 
 	elif arg.lower().startswith('caesar'):
 		embed.add_field(name='Caesar Cipher Decode', value=f"{help_dict['Caesar'][0]}\n {help_dict['Caesar'][1]}", inline=False)
-        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
 		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
 
 
 	elif arg.lower().startswith('vigenere'):
 		embed.add_field(name='Vigenere Cipher', value=f"{help_dict['Vigenere'][0]}\n {help_dict['Vigenere'][1]}", inline=False)
-        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
 		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
 
 	elif arg.lower().startswith('a1z26'):
 		embed.add_field(name='a1z26', value=f"{help_dict['a1z26'][0]}\n {help_dict['a1z26'][1]}", inline=False)
-        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
 		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
 
 	elif arg.lower().startswith('base64'):
 		embed.add_field(name='Base64', value=f"{help_dict['base64'][0]}\n {help_dict['base64'][1]}", inline=False)
-        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
 		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
 
 	elif arg.lower().startswith('null'):
 		embed.add_field(name='null', value=f"{help_dict['null'][0]}\n {help_dict['null'][1]}", inline=False)
-        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
 		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
 
 	elif arg.lower().startswith('atbash'):
 		embed.add_field(name='Atbash Cipher', value=f"{help_dict['atbash'][0]}\n {help_dict['atbash'][1]}", inline=False)
-        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
 		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
 
 	elif arg.lower().startswith('morse'):
 		embed.add_field(name='Morse Code', value=f"{help_dict['morse'][0]}\n {help_dict['morse'][1]}", inline=False)
-        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
 		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
 
 	elif arg.lower().startswith('tap'):
 		embed.add_field(name='Tap Code', value=f"{help_dict['tap'][0]}\n {help_dict['tap'][1]}", inline=False)
-        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
 		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
 
 	elif arg.lower().startswith('bacon'):
 		embed.add_field(name='Bacon Cipher', value=f"{help_dict['bacon'][0]}\n {help_dict['bacon'][1]}", inline=False)
-        #embed.add_field(name='Note',value='The Prefix `&?` is only required in servers. All the commands will work without the prefix in the bots DM.',inline=False)
 		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
+  
+	elif arg.lower().startswith('polybius'):
+		embed.add_field(name='Polybus Cipher: ', value=f'{help_dict["polybius"][0]}\n {help_dict["polybius"][1]}', inline=False)
+		embed.add_field(name='Slash Commands', value=f"{help_dict['slash']}", inline=False)
+    
 
 	else:
 		embed.add_field(name="Error the command that you entered could not be found", value="[You can type `&?help` to see a list of all commands](https://bit.ly/2PbNIbf)")
@@ -160,11 +158,11 @@ def command_prefix(bot, message):
     if message.guild is None:
         return ''
     else:
-        return '&?'
+        return '&>'
 
 
 async def get_prefix(ctx):
-  return '' if ctx.guild is None else '&?'
+  return '' if ctx.guild is None else '&>'
 
 bot = commands.Bot(command_prefix)
 slash = SlashCommand(bot, sync_commands=True)
@@ -179,17 +177,17 @@ bot.remove_command('help') # default help command SUCKS
 @bot.event
 async def on_ready():   
   print(f'Logged in as {bot.user}!')
-  activity = discord.Game(name=f"&?help | on {len(bot.guilds)} servers")
+  activity = discord.Game(name=f"&>help | on {len(bot.guilds)} servers")
   await bot.change_presence(activity=activity)
 
 @bot.event
 async def on_guild_join(self):
-	activity = discord.Game(name=f"&?help | on {len(bot.guilds)} servers")
+	activity = discord.Game(name=f"&>help | on {len(bot.guilds)} servers")
 	await bot.change_presence(activity=activity)
   
 @bot.event
 async def on_guild_remove(self):
-	activity = discord.Game(name=f"&?help | on {len(bot.guilds)} servers")
+	activity = discord.Game(name=f"&>help | on {len(bot.guilds)} servers")
 	await bot.change_presence(activity=activity)
   
 
@@ -248,4 +246,4 @@ print('Loading slash commands...')
 bot.load_extension("cogs.slash")
 
 print('Firing up the Flux Capacitors...')
-bot.run(os.getenv('TOKEN'))
+bot.run(os.getenv('BETA'))
